@@ -23,7 +23,7 @@ namespace AuthenticationHelperService.Controllers
 
         [HttpPost]
         [Route("generate-token")]
-        public string GenerateToken(UserDto user)
+        public async Task<string> GenerateToken(UserDto user)
         {
             // Create token
             var claims = new[]
@@ -46,7 +46,7 @@ namespace AuthenticationHelperService.Controllers
 
         [HttpPost]
         [Route("create-password-hash")]
-        public PasswordHashDto CreatePasswordHash(string password)
+        public async Task<PasswordHashDto> CreatePasswordHash(string password)
         {
             byte[] salt = new byte[16];
             using (var rng = new RNGCryptoServiceProvider())
@@ -57,13 +57,14 @@ namespace AuthenticationHelperService.Controllers
             var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000, HashAlgorithmName.SHA256);
             byte[] hash = pbkdf2.GetBytes(20);
 
-            return new PasswordHashDto { passwordHash = hash, passwordSalt = salt };
+            return await Task.FromResult(new PasswordHashDto { passwordHash = hash, passwordSalt = salt });
+
         }
 
 
         [HttpPost]
         [Route("verify-password-hash")]
-        public bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
+        public async Task<bool> VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
         {
             var pbkdf2 = new Rfc2898DeriveBytes(password, storedSalt, 10000, HashAlgorithmName.SHA256);
             byte[] hash = pbkdf2.GetBytes(20);
